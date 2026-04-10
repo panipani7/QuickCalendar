@@ -50,12 +50,16 @@ class CalendarView(NSView):
         self._btn_prev.setAction_("prevMonth:")
         self.addSubview_(self._btn_prev)
 
-        # 年月ラベル（中央）
+        # 年月ラベル（中央）— ボタン中心に縦揃え
+        _mfont = NSFont.boldSystemFontOfSize_(14)
+        _line_h = _mfont.ascender() - _mfont.descender()
+        _btn_center_y = VIEW_H - HDR + 9 + 16  # ボタンの縦中心
+        _label_y = _btn_center_y - _line_h / 2
         self._lbl_month = NSTextField.labelWithString_("")
         self._lbl_month.setFrame_(
-            NSMakeRect(PAD + 28, VIEW_H - HDR + 13,
-                       VIEW_W - PAD * 2 - 56, 24))
-        self._lbl_month.setFont_(NSFont.boldSystemFontOfSize_(14))
+            NSMakeRect(PAD + 28, _label_y,
+                       VIEW_W - PAD * 2 - 56, _line_h))
+        self._lbl_month.setFont_(_mfont)
         self._lbl_month.setAlignment_(NSTextAlignmentCenter)
         self.addSubview_(self._lbl_month)
 
@@ -288,6 +292,7 @@ class CalendarView(NSView):
 
 class AppDelegate(NSObject):
     def applicationDidFinishLaunching_(self, notification):
+        NSUserDefaults.standardUserDefaults().setInteger_forKey_(0, "NSInitialToolTipDelay")
         self._setup_status_item()
         self._setup_popover()
         self._start_timer()
@@ -338,6 +343,13 @@ class AppDelegate(NSObject):
         self._popover.setContentSize_(NSMakeSize(VIEW_W, VIEW_H))
         self._popover.setContentViewController_(vc)
         self._popover.setBehavior_(NSPopoverBehaviorTransient)
+        self._popover.setDelegate_(self)
+
+    def popoverDidShow_(self, notification):
+        """ポップオーバー表示後にキーウィンドウにしてツールチップを即時有効化"""
+        win = self._popover.contentViewController().view().window()
+        if win:
+            win.makeKeyWindow()
 
     def togglePopover_(self, sender):
         event = NSApp.currentEvent()

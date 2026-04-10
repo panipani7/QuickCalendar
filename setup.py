@@ -5,6 +5,7 @@ OPTIONS = {
     'argv_emulation': False,
     'packages': ['jpholiday'],
     'includes': ['objc', 'AppKit', 'Foundation', 'calendar', 'datetime'],
+    'resources': ['icon.png', 'icon@2x.png'],
     'plist': {
         'LSUIElement': True,              # Dockに表示しない（メニューバーアプリ）
         'NSHighResolutionCapable': True,
