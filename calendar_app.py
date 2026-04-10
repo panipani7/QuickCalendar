@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """macOS メニューバー カレンダーアプリ（ネイティブUI版）"""
+import os
 import objc
 from AppKit import *
 from Foundation import *
@@ -313,9 +314,13 @@ class AppDelegate(NSObject):
     @objc.python_method
     def _update_icon(self):
         btn = self._item.button()
-        # SF Symbol のカレンダーアイコン（ダーク/ライトモード自動対応）
-        img = NSImage.imageWithSystemSymbolName_accessibilityDescription_(
-            "calendar", "カレンダー")
+        base = os.path.dirname(os.path.abspath(__file__))
+        img = NSImage.alloc().initWithSize_(NSMakeSize(22, 22))
+        for filename in ["icon.png", "icon@2x.png"]:
+            rep = NSBitmapImageRep.imageRepWithContentsOfFile_(
+                os.path.join(base, filename))
+            if rep:
+                img.addRepresentation_(rep)
         img.setTemplate_(True)
         btn.setImage_(img)
         btn.setTitle_("")
