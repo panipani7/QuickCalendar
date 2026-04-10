@@ -8,16 +8,16 @@ OPTIONS = {
     'plist': {
         'LSUIElement': True,              # Dockに表示しない（メニューバーアプリ）
         'NSHighResolutionCapable': True,
-        'CFBundleName': 'MenuBarCalendar',
-        'CFBundleDisplayName': 'メニューバーカレンダー',
-        'CFBundleIdentifier': 'com.local.menubarcalendar',
+        'CFBundleName': 'QuickCalendar',
+        'CFBundleDisplayName': 'Quick Calendar',
+        'CFBundleIdentifier': 'com.local.quickcalendar',
         'CFBundleVersion': '1.0',
         'CFBundleShortVersionString': '1.0',
     },
 }
 
 setup(
-    name='MenuBarCalendar',
+    name='QuickCalendar',
     app=APP,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],

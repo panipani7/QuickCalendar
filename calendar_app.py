@@ -305,7 +305,7 @@ class AppDelegate(NSObject):
         # 右クリックメニュー（終了用）
         menu = NSMenu.alloc().init()
         quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "カレンダーを終了", "quitApp:", "")
+            "Quick Calendarを終了", "quitApp:", "")
         quit_item.setTarget_(self)
         menu.addItem_(quit_item)
         self._right_click_menu = menu
