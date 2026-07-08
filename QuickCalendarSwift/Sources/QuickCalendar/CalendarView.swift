@@ -14,10 +14,18 @@ private var gregorian: Calendar = {
 }()
 
 struct CalendarView: View {
+    /// ホバー中の祝日セル（自前ツールチップ表示用）
+    private struct HoveredHoliday: Equatable {
+        let row: Int
+        let col: Int
+        let name: String
+    }
+
     @State private var year: Int
     @State private var month: Int
     @State private var today = Date()
     @State private var launchAtLogin = LoginItem.isEnabled
+    @State private var hoveredHoliday: HoveredHoliday?
 
     init() {
         let now = gregorian.dateComponents([.year, .month], from: Date())
@@ -91,13 +99,34 @@ struct CalendarView: View {
             ForEach(0..<6, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { col in
-                        dayCell(day: weeks[row][col], col: col)
+                        dayCell(day: weeks[row][col], row: row, col: col)
                     }
                 }
             }
         }
         .padding(.horizontal, PAD)
         .padding(.bottom, 4)
+        .overlay(holidayTooltip)
+    }
+
+    /// 祝日名のツールチップ（.help()はMenuBarExtra内で機能しないため自前描画）
+    @ViewBuilder
+    private var holidayTooltip: some View {
+        if let h = hoveredHoliday {
+            Text(h.name)
+                .font(.system(size: 11))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(.regularMaterial)
+                        .shadow(color: .black.opacity(0.25), radius: 3, y: 1)
+                )
+                .fixedSize()
+                .position(x: PAD + CGFloat(h.col) * CELL + CELL / 2,
+                          y: CGFloat(h.row) * CELL - 12)
+                .allowsHitTesting(false)
+        }
     }
 
     /// 日曜始まりの月間カレンダー（6週分・空きセルは0）
@@ -112,7 +141,7 @@ struct CalendarView: View {
     }
 
     @ViewBuilder
-    private func dayCell(day: Int, col: Int) -> some View {
+    private func dayCell(day: Int, row: Int, col: Int) -> some View {
         if day == 0 {
             Color.clear.frame(width: CELL, height: CELL)
         } else {
@@ -125,7 +154,7 @@ struct CalendarView: View {
                         .padding(3)
                 }
                 Text("\(day)")
-                    .font(.system(size: 13, weight: isToday ? .bold : .regular))
+                    .font(.system(size: 15, weight: isToday ? .bold : .regular))
                     .foregroundColor(dayColor(col: col,
                                               isToday: isToday,
                                               isHoliday: holiday != nil))
@@ -142,7 +171,14 @@ struct CalendarView: View {
             .frame(width: CELL, height: CELL)
 
             if let holiday {
-                cell.help(holiday)
+                cell.onHover { hovering in
+                    let hovered = HoveredHoliday(row: row, col: col, name: holiday)
+                    if hovering {
+                        hoveredHoliday = hovered
+                    } else if hoveredHoliday == hovered {
+                        hoveredHoliday = nil
+                    }
+                }
             } else {
                 cell
             }
@@ -216,6 +252,7 @@ struct CalendarView: View {
         if m < 1 { m = 12; year -= 1 }
         if m > 12 { m = 1; year += 1 }
         month = m
+        hoveredHoliday = nil
     }
 
     private func goToday() {
@@ -223,5 +260,6 @@ struct CalendarView: View {
         year = now.year!
         month = now.month!
         today = Date()
+        hoveredHoliday = nil
     }
 }
