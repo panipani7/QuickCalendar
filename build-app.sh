@@ -18,6 +18,19 @@ cp "$BIN" "$APP/Contents/MacOS/QuickCalendar"
 cp icon.png icon@2x.png "$APP/Contents/Resources/"
 printf 'APPL????' > "$APP/Contents/PkgInfo"
 
+# Finder用アプリアイコン（.icns）を appicon.svg から生成
+ICONSET="$(mktemp -d)/AppIcon.iconset"
+mkdir -p "$ICONSET"
+for size in 16 32 128 256 512; do
+    sips -s format png -z "$size" "$size" appicon.svg \
+        --out "$ICONSET/icon_${size}x${size}.png" >/dev/null
+    d=$((size * 2))
+    sips -s format png -z "$d" "$d" appicon.svg \
+        --out "$ICONSET/icon_${size}x${size}@2x.png" >/dev/null
+done
+iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
+rm -rf "$(dirname "$ICONSET")"
+
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -31,6 +44,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 	<string>QuickCalendar</string>
 	<key>CFBundleDisplayName</key>
 	<string>Quick Calendar</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleVersion</key>

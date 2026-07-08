@@ -64,7 +64,10 @@ Xcode は不要です（Command Line Tools の Swift でビルドできます）
 
 ### アイコンを差し替える
 
-`icon.svg` がマスター素材です。変更したら以下でメニューバー用 PNG を再生成してビルドしてください。
+- `icon.svg` … メニューバーアイコンのマスター素材
+- `appicon.svg` … Finder に表示されるアプリアイコンのマスター素材（.icns はビルド時に自動生成）
+
+`icon.svg` を変更したら以下でメニューバー用 PNG を再生成してビルドしてください。`appicon.svg` はビルドするだけで反映されます。
 
 ```sh
 sips -s format png -z 22 22 icon.svg --out icon.png
