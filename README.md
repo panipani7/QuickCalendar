@@ -74,7 +74,7 @@ sips -s format png -z 44 44 icon.svg --out icon@2x.png
 
 ### 旧 Python 版について
 
-初期実装（Python + PyObjC + py2app）のソースは `calendar_app.py` / `setup.py` / `run.sh` / `install-app.sh` として残していますが、現在は Swift 版が正式版です。
+初期実装（Python + PyObjC + py2app）は Swift 版への移植完了に伴い削除しました。必要な場合は git 履歴から参照できます。
 
 ## 免責事項（利用規約）
 
