@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """macOS メニューバー カレンダーアプリ（ネイティブUI版）"""
 import os
+import plistlib
 import objc
 from AppKit import *
 from Foundation import *
@@ -21,6 +22,19 @@ VIEW_W   = 7 * CELL + PAD * 2
 VIEW_H   = HDR + WDH + ROWS * CELL + FOOTER_H
 
 WEEKDAYS_JP = ["月", "火", "水", "木", "金", "土", "日"]
+
+# ログイン時自動起動用 LaunchAgent
+LAUNCH_AGENT_LABEL = "com.local.quickcalendar"
+LAUNCH_AGENT_PATH = os.path.expanduser(
+    f"~/Library/LaunchAgents/{LAUNCH_AGENT_LABEL}.plist")
+
+
+def app_bundle_path():
+    """起動対象の .app パスを返す（ソース実行時は /Applications を参照）"""
+    path = NSBundle.mainBundle().bundlePath()
+    if path.endswith("QuickCalendar.app"):
+        return path
+    return "/Applications/QuickCalendar.app"
 
 
 class CalendarView(NSView):
@@ -308,8 +322,16 @@ class AppDelegate(NSObject):
         btn.setAction_("togglePopover:")
         btn.sendActionOn_(NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp)
 
-        # 右クリックメニュー（終了用）
+        # 右クリックメニュー
         menu = NSMenu.alloc().init()
+        login_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+            "ログイン時に自動起動", "toggleLoginItem:", "")
+        login_item.setTarget_(self)
+        login_item.setState_(
+            NSControlStateValueOn if os.path.exists(LAUNCH_AGENT_PATH)
+            else NSControlStateValueOff)
+        menu.addItem_(login_item)
+        menu.addItem_(NSMenuItem.separatorItem())
         quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
             "Quick Calendarを終了", "quitApp:", "")
         quit_item.setTarget_(self)
@@ -364,6 +386,32 @@ class AppDelegate(NSObject):
             btn = self._item.button()
             self._popover.showRelativeToRect_ofView_preferredEdge_(
                 btn.bounds(), btn, NSMinYEdge)
+
+    def toggleLoginItem_(self, sender):
+        if os.path.exists(LAUNCH_AGENT_PATH):
+            os.remove(LAUNCH_AGENT_PATH)
+            sender.setState_(NSControlStateValueOff)
+            return
+
+        app_path = app_bundle_path()
+        if not os.path.exists(app_path):
+            alert = NSAlert.alloc().init()
+            alert.setMessageText_("アプリが見つかりません")
+            alert.setInformativeText_(
+                f"{app_path} が存在しないため自動起動を設定できません。\n"
+                "install-app.sh でアプリをインストールしてください。")
+            alert.runModal()
+            return
+
+        os.makedirs(os.path.dirname(LAUNCH_AGENT_PATH), exist_ok=True)
+        plist = {
+            "Label": LAUNCH_AGENT_LABEL,
+            "ProgramArguments": ["/usr/bin/open", "-a", app_path],
+            "RunAtLoad": True,
+        }
+        with open(LAUNCH_AGENT_PATH, "wb") as f:
+            plistlib.dump(plist, f)
+        sender.setState_(NSControlStateValueOn)
 
     def quitApp_(self, sender):
         NSApplication.sharedApplication().terminate_(None)

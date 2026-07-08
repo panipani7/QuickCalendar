@@ -4,7 +4,7 @@ APP = ['calendar_app.py']
 OPTIONS = {
     'argv_emulation': False,
     'packages': ['jpholiday'],
-    'includes': ['objc', 'AppKit', 'Foundation', 'calendar', 'datetime'],
+    'includes': ['objc', 'AppKit', 'Foundation', 'calendar', 'datetime', 'plistlib'],
     'resources': ['icon.png', 'icon@2x.png'],
     'plist': {
         'LSUIElement': True,              # Dockに表示しない（メニューバーアプリ）
