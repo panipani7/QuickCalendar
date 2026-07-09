@@ -11,29 +11,22 @@ struct QuickCalendarApp: App {
         MenuBarExtra {
             CalendarView()
         } label: {
-            Image(nsImage: Self.menuBarIcon)
+            MenuBarLabel()
         }
         .menuBarExtraStyle(.window)
     }
+}
 
-    /// メニューバーアイコン（バンドル内の icon.png / icon@2x.png を合成）
-    private static let menuBarIcon: NSImage = {
-        let img = NSImage(size: NSSize(width: 22, height: 22))
-        for name in ["icon", "icon@2x"] {
-            if let path = Bundle.main.path(forResource: name, ofType: "png"),
-               let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-               let rep = NSBitmapImageRep(data: data) {
-                img.addRepresentation(rep)
+/// メニューバーのラベル。日付が変わるとアイコンを描き直す
+struct MenuBarLabel: View {
+    @State private var today = Date()
+
+    var body: some View {
+        Image(nsImage: MenuBarIcon.image(
+            day: Calendar.current.component(.day, from: today)))
+            .onReceive(NotificationCenter.default.publisher(
+                for: .NSCalendarDayChanged)) { _ in
+                today = Date()
             }
-        }
-        guard !img.representations.isEmpty else {
-            let fallback = NSImage(
-                systemSymbolName: "calendar",
-                accessibilityDescription: "Quick Calendar")!
-            fallback.isTemplate = true
-            return fallback
-        }
-        img.isTemplate = true
-        return img
-    }()
+    }
 }
